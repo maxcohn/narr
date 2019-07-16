@@ -50,7 +50,7 @@ import re
 EPSILON = 'ε'
 
 # input string
-s = "aba"
+s = "abbb"
 
 #TODO add checking of duplicate transitions
 #TODO but this might not cause a problem because of the use of sets and their unique value propterty
@@ -73,10 +73,10 @@ def parts(m: re.Match):
     return int(m.group(1)), m.group(2) if m.group(2) is not None else EPSILON, int(m.group(3))
 
 # regex for splitting the transition string
-split = re.compile('(\d+)=(\w)?>(\d+)')
+split = re.compile(r'(\d+)=(\w)?>(\d+)')
 
 
-with open("a.a") as f:
+with open("least-2-a-exactly-2-b.nfa") as f:
     cur_index = 0
     for line in f:
         if line.strip()[0] == "$":
@@ -85,6 +85,9 @@ with open("a.a") as f:
 
             # exit loop as we are done adding final states
             break
+        elif line.strip()[0] == "#":
+            # line is a comment, so ignore it
+            continue
         start, trans_char, next = parts(split.match(line.strip()))
         
         if start == cur_index:
@@ -157,7 +160,7 @@ for c in s:
 
         # add them all to the new states list
         for p in potential_states:
-            new_states.add(p)###CHANGE
+            new_states.add(p)
 
     # set the active states to be the new_states now
     active_states = new_states
@@ -166,5 +169,5 @@ for c in s:
 # print wheter the given string matches
 print( "In langauge" if len(active_states.intersection(final_states)) != 0 else "Not in language")
 
-print(states)
-print(active_states)
+#print(states)
+#print(active_states)
