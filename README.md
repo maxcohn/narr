@@ -60,6 +60,8 @@ Let's say we wanted an NFA that accepts an even number of a's followed by exactl
 $6
 ```
 
+The empty arrows (`=>`) represent epsilon transitions.
+
 This NFA could be drawn as:
 
 ![Example 2](img/example2.png)

@@ -1,0 +1,11 @@
+# Language that accepts a string that starts with an even number of a's
+# followed by exactly 2 b's
+0=>4
+0=>1
+1=a>2
+2=a>3
+3=>1
+3=>4
+4=b>5
+5=b>6
+$6
