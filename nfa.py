@@ -50,14 +50,14 @@ import re
 EPSILON = 'ε'
 
 # input string
-s = "abbb"
+s = "aabbb"
 
 #TODO add checking of duplicate transitions
 #TODO but this might not cause a problem because of the use of sets and their unique value propterty
 
 
 # list of list of transitions (trans_char, next_state) where the index in the list represents the start state for each list of transitions
-states = [[]]
+states = [[]] * 100
 
 # set of accepting states
 final_states = set()
@@ -76,7 +76,7 @@ def parts(m: re.Match):
 split = re.compile(r'(\d+)=(\w)?>(\d+)')
 
 
-with open("least-2-a-exactly-2-b.nfa") as f:
+with open("even-as-2-bs.nfa") as f:
     cur_index = 0
     for line in f:
         if line.strip()[0] == "$":
@@ -151,6 +151,7 @@ for c in s:
     # we do this because all possible epsilon transitions occur before the next character is processed
 
     # we union the two sets because we have the 
+    print(f"{active_states}")
     active_states = active_states.union(all_epsilon(active_states))
 
     for a in active_states:
