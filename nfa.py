@@ -11,20 +11,10 @@ I needed to learn NFA simulation
 """
 TODO
 
-Add comments ---- #?
-
-build out examples/tests
-
-add support for epsilon transitions
-    Maybe done?
-
-
 Comment so it is clear on the nfa simulations process
 
 Have a clear version and a raw version
     Compare speeds
-
-Make some example nfas
 
 Make a program that generates the input for this interpreter from a regular expression
 
@@ -36,21 +26,12 @@ In clean version
 
 
 """
-
-
-"""
-0=a>1
-0=b>2
-1=a>2
-2=b>1
-
-"""
 import re
 
 EPSILON = 'ε'
 
 # input string
-s = "aab"
+s = "aaaabb"
 
 #TODO add checking of duplicate transitions
 #TODO but this might not cause a problem because of the use of sets and their unique value propterty
@@ -76,7 +57,7 @@ def parts(m: re.Match):
 # regex for splitting the transition string
 split = re.compile(r'(\d+)=(\w)?>(\d+)')
 
-with open("even-as-2-bs.nfa") as f:
+with open("examples/even-as-2-bs.nfa") as f:
     for line in f:
         if line.strip()[0] == "$":
             # accepting states list
@@ -91,41 +72,29 @@ with open("even-as-2-bs.nfa") as f:
         start, trans_char, next = parts(split.match(line.strip()))
         states[start].append(trans(trans_char, next))
 
-        
-
 def has_trans(i: int, c: str):
     # where i is the state idnex and c is the transition character
-    
     transitions = []
     
     # go through all transition tuples associated with the current state
     for t, n in states[i]:
-
         # if the current transition uses the given given character, add it to the transitions list 
         if c == t:
             transitions.append(n)
-        
-        # if the current transition is an epsilon transition, add it no matter what
-        #elif t == EPSILON:
-        #    transitions.append(n)
     
     return transitions
 
 def all_epsilon(s: set):
     # where s is a set of the states to each for epsilon transitions in
-    #TODO doesn't affect performance,but should change to a set
-    epsilon_trans = []
+    epsilon_trans = set()
 
     # check every transition that exits for an epsilon transiton
     for i in s:
         for t,n in states[i]:
             if t == EPSILON:
-                epsilon_trans.append(n)
+                epsilon_trans.add(n)
     
     return epsilon_trans
-
-
-#states.append(trans("a",1))
 
 active_states = set()
 active_states.add(0)
