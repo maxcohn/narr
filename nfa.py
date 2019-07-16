@@ -50,14 +50,15 @@ import re
 EPSILON = 'ε'
 
 # input string
-s = "aabbb"
+s = "aab"
 
 #TODO add checking of duplicate transitions
 #TODO but this might not cause a problem because of the use of sets and their unique value propterty
 
 
-# list of list of transitions (trans_char, next_state) where the index in the list represents the start state for each list of transitions
-states = [[]] * 100
+# list of list of transitions (trans_char, next_state) where the index in the
+# list represents the start state for each list of transitions
+states = [[] for i in range(100)]
 
 # set of accepting states
 final_states = set()
@@ -75,9 +76,7 @@ def parts(m: re.Match):
 # regex for splitting the transition string
 split = re.compile(r'(\d+)=(\w)?>(\d+)')
 
-
 with open("even-as-2-bs.nfa") as f:
-    cur_index = 0
     for line in f:
         if line.strip()[0] == "$":
             # accepting states list
@@ -88,18 +87,11 @@ with open("even-as-2-bs.nfa") as f:
         elif line.strip()[0] == "#":
             # line is a comment, so ignore it
             continue
+
         start, trans_char, next = parts(split.match(line.strip()))
+        states[start].append(trans(trans_char, next))
+
         
-        if start == cur_index:
-            states[cur_index].append(trans(trans_char, next))
-        elif start == cur_index +1:
-            cur_index += 1
-            states.append([trans(trans_char, next)])
-        else:
-            print("indexing skip error")
-            quit()
-        
-        #print(f"state {start} transitions with {trans} to {next}")
 
 def has_trans(i: int, c: str):
     # where i is the state idnex and c is the transition character
@@ -119,7 +111,7 @@ def has_trans(i: int, c: str):
     
     return transitions
 
-def all_epsilon(s):
+def all_epsilon(s: set):
     # where s is a set of the states to each for epsilon transitions in
     #TODO doesn't affect performance,but should change to a set
     epsilon_trans = []
@@ -138,10 +130,6 @@ def all_epsilon(s):
 active_states = set()
 active_states.add(0)
 
-#print(active_states)
-
-#print(has_trans(0, "b"))
-
 # loop through all input characters
 for c in s:
     # create a new set to represent the possible states we can transition to from the current active states
@@ -151,7 +139,6 @@ for c in s:
     # we do this because all possible epsilon transitions occur before the next character is processed
 
     # we union the two sets because we have the 
-    print(f"{active_states}")
     active_states = active_states.union(all_epsilon(active_states))
 
     for a in active_states:
@@ -169,6 +156,3 @@ for c in s:
 
 # print wheter the given string matches
 print( "In langauge" if len(active_states.intersection(final_states)) != 0 else "Not in language")
-
-#print(states)
-#print(active_states)
