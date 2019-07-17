@@ -66,6 +66,11 @@ This NFA could be drawn as:
 
 ![Example 2](img/example2.png)
 
+## How to run
+
+#### Python
+py narr.py \<narr file> \<input string>
+
 -------
 
 If there are any issues with this interpreter, please let me know.

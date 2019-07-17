@@ -1,8 +1,8 @@
 import re
+import sys
 
 # constant representing epsilon for epsilon transitions
 EPSILON = 'ε'
-
 
 """
 Steps involved in this interpreter:
@@ -51,6 +51,10 @@ Other notes:
     state, so sets take care of the unique existence of each state in the active_states set
 """
 
+# get string from user
+file_name = sys.argv[1]
+user_input = sys.argv[2]
+
 # list of list of transitions (trans_char, next_state) where the index in the
 # list represents the start state for each list of transitions
 states = [[] for i in range(100)]
@@ -71,7 +75,7 @@ def parts(m: re.Match):
 # regex for splitting the transition string
 split = re.compile(r'(\d+)=(\w)?>(\d+)')
 
-with open("examples/even-as-2-bs.nfa") as f:
+with open(file_name) as f:
     for line in f:
         if line.strip()[0] == "$":
             # accepting states list
@@ -115,7 +119,7 @@ active_states = set()
 active_states.add(0)
 
 # loop through all input characters
-for c in s:
+for c in user_input:
     # create a new set to represent the possible states we can transition to from the current active states
     new_states = set()
 
