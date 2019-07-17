@@ -1,41 +1,55 @@
-""" README
-
-Why?
-
-I like esoteric languages
-
-I needed to learn NFA simulation
-
-"""
-
-"""
-TODO
-
-Comment so it is clear on the nfa simulations process
-
-Have a clear version and a raw version
-    Compare speeds
-
-Make a program that generates the input for this interpreter from a regular expression
-
-
-In clean version
-    NFA object
-    Transition object
-    Good error reporting
-
-
-"""
 import re
 
+# constant representing epsilon for epsilon transitions
 EPSILON = 'ε'
 
-# input string
-s = "aaaabb"
 
-#TODO add checking of duplicate transitions
-#TODO but this might not cause a problem because of the use of sets and their unique value propterty
+"""
+Steps involved in this interpreter:
 
+Create array of states
+    (states are identified by their numbers which are also their index in array)
+    
+    This is an adjacency list representation of the NFA
+
+Read the file
+    Parse each line for the start state, the transition character, and the next state
+    
+    Add the new transiton to the adjacency list for the respective state
+
+    We also need to account for accepting states, which we do by checking for lines that
+    start with '$'
+    
+Simulate NFA
+    We create a new, empty set of active states, we'll add to this to keep track
+    of the states we're active in after processing each character in the input
+
+    Before looping through each active state, we need to account for the epsilon
+    transitions, which occur before each character is read
+        To do this, we make a set of each possible state we can be in due to
+        epsilon transitions and then union it with the active states. This gives
+        us the full set of states we need to try and apply our transition character to
+
+        Then we loop through each active state and check if there are any transitions we
+        can make with our current input character. We collect all of these into a list and
+        then add them all to our new_states set.
+
+        After all the new active states are found, we set active_states to new_states and
+        continue our next interation of our loop on our next input character
+
+Checking for existence in language
+    For a string to be accepted, at least one of the active states must be in the accepting
+    states list when we finish
+
+    If we do have an active state that is also an accepting state, the string exists in the
+    language that our NFA accepts.
+
+
+
+Other notes:
+    Sets are very helpful here because we can't have multiple instances in the same
+    state, so sets take care of the unique existence of each state in the active_states set
+"""
 
 # list of list of transitions (trans_char, next_state) where the index in the
 # list represents the start state for each list of transitions
@@ -96,6 +110,7 @@ def all_epsilon(s: set):
     
     return epsilon_trans
 
+# create the active_states set and add the starting state
 active_states = set()
 active_states.add(0)
 
@@ -124,4 +139,4 @@ for c in s:
 
 
 # print wheter the given string matches
-print( "In langauge" if len(active_states.intersection(final_states)) != 0 else "Not in language")
+print(len(active_states.intersection(final_states)) != 0)

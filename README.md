@@ -65,3 +65,7 @@ The empty arrows (`=>`) represent epsilon transitions.
 This NFA could be drawn as:
 
 ![Example 2](img/example2.png)
+
+-------
+
+If there are any issues with this interpreter, please let me know.
