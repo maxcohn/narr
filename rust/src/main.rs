@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{BufReader, BufRead, Result};
+use std::io::{BufReader, BufRead};
 use std::collections::HashSet;
 use regex::Regex;
 #[macro_use]
@@ -7,9 +7,14 @@ extern crate lazy_static;
 
 const EPSILON: char = 1 as char;
 
+lazy_static! {
+    static ref TRANS_RE: Regex = Regex::new(r"(\d+)=(\w)?>(\d+)").unwrap();
+}
+
 
 
 /// A transition between states
+#[derive(Debug)]
 struct Transition {
     /// The character that triggers the transition
     trans_char: char,
@@ -45,8 +50,67 @@ struct NFA {
 impl NFA {
 
     #[allow(dead_code)]
-    fn simulate(&self, s: &str) -> bool {
-        true
+    fn simulate(&self, input: &str) -> bool {
+        // set of currently active states in the NFA, with starting state included
+        let mut active_states = HashSet::new();
+        active_states.insert(0);
+
+        // loop over all input characters
+        for c in input.chars() {
+            let mut new_states = HashSet::new();
+
+            for cur_state in active_states.union(&self.all_epsilon(&active_states)) {
+                let potential_states = self.get_trans_for_char(cur_state.clone(), c);
+
+                for s in potential_states {
+                    new_states.insert(s);
+                }
+            }
+
+            active_states = new_states;
+
+
+
+        }
+
+        let state_intersect = active_states.intersection(&self.accepting_states)
+            .collect::<Vec<&usize>>();
+
+        return state_intersect.len() != 0;
+
+    }
+
+    fn get_trans_for_char(&self, state: usize, c: char) -> Vec<usize>{
+        let mut possible_trans = Vec::new();
+
+        for trans in self.states[state].iter() {
+            if trans.trans_char == c {
+                possible_trans.push(trans.next_state);
+            }
+        }
+
+        return possible_trans;
+        
+    }
+
+    fn all_epsilon(&self, active_states: &HashSet<usize>) -> HashSet<usize> {
+        let mut trans = HashSet::new();
+
+        /*
+        for state in active_states.iter().cloned() {
+            for t in self.states[state].iter() {
+                if t.trans_char == EPSILON {
+                    trans.insert(t.next_state);
+                }
+            }
+        }
+        */
+        for s in active_states.iter().cloned() {
+            for i in self.get_trans_for_char(s, EPSILON) {
+                trans.insert(i);
+            }
+        }
+        return trans;
     }
 
     /// Adds a transition to the NFA
@@ -69,11 +133,6 @@ impl NFA {
     ///
     /// Any problems with reading the given file will result in a panic
     fn new(file_name: &str) -> NFA {
-
-        lazy_static! {
-            static ref match_re: Regex = Regex::new(r"(\d+)=(\w)?>(\d+)").unwrap();
-        }
-
         let mut nfa = NFA {
             states: Vec::new(),
             accepting_states: HashSet::new()
@@ -100,16 +159,22 @@ impl NFA {
                     .map(|s| s.parse::<usize>().expect("Accepting state list ill formatted"))
                     .collect();
 
+                // check if any of the given states don't exist as indicies in the vector
+                for s in nfa.accepting_states.iter().cloned() {
+                    while s >= nfa.states.len() {
+                        nfa.states.push(Vec::new());
+                    }
+                }
+
                 // break out of reading loop because we are done
                 break;
-
             } else if first_char == Some('#') {
                 // this line is a comment, so we ignore it
                 continue;
             }
 
             // capture each part of the transition
-            let caps = match_re.captures(line.trim())
+            let caps = TRANS_RE.captures(line.trim())
                 .unwrap_or_else(|| panic!("The given transiton is ill formatted {}", line));
 
             let start_state = caps[1].parse::<usize>()
@@ -130,9 +195,13 @@ impl NFA {
 
             // add transition to it's respective state in the NFA
             nfa.add_transition(start_state, Transition::new(trans_char, next_state));
-
-
         }
+
+        /*DEBUG REMOVE
+        for a in nfa.states.iter() {
+            print!("{:?} ", a);
+        }
+        */
 
         return nfa
     }
@@ -145,9 +214,18 @@ fn main() {
 
     let nfa = NFA::new(&args[1]);
 
+    let input = &args[2];
+
+    let res = nfa.simulate(input);
+
+    println!("{}", res);
+    /*
+    println!("{}", input);
+    
     for v in nfa.states {
         for x in v {
             println!("{} -> {}", x.trans_char, x.next_state);
         }
     }
+    */
 }
