@@ -1,1 +1,6 @@
 *.a
+*.d
+.cargo-lock
+*
+invoked.timestamp
+.rustc_info.json
