@@ -49,7 +49,11 @@ struct NFA {
 
 impl NFA {
 
-    #[allow(dead_code)]
+    /// Simulates the NFA based on the given input, returning whether it would
+    /// be accepted by the NFA
+    ///
+    /// # Arguments
+    /// * `input` - String to check if NFA accepts
     fn simulate(&self, input: &str) -> bool {
         // set of currently active states in the NFA, with starting state included
         let mut active_states = HashSet::new();
@@ -57,9 +61,14 @@ impl NFA {
 
         // loop over all input characters
         for c in input.chars() {
+            // set of states that we're active in after this current set of moves
             let mut new_states = HashSet::new();
 
+            // loop through each active state and state that could be active
+            // due to epsilon transitions
             for cur_state in active_states.union(&self.all_epsilon(&active_states)) {
+                // get a list of all the potential states we could go to with the
+                // current input char from the current state
                 let potential_states = self.get_trans_for_char(cur_state.clone(), c);
 
                 for s in potential_states {
@@ -67,19 +76,25 @@ impl NFA {
                 }
             }
 
+            // the active states for the next round
             active_states = new_states;
-
-
-
         }
 
+        // get intersection of active_states and accepting states after simulation
         let state_intersect = active_states.intersection(&self.accepting_states)
             .collect::<Vec<&usize>>();
 
+        // if there are any states in the intersec, that means the string is matched
         return state_intersect.len() != 0;
 
     }
 
+    /// Returns a vector of states that can be transitioned to from the given
+    /// state with the given character
+    ///
+    /// # Arguments
+    /// * `state` - Starting state of transitions
+    /// * `c` - Character that triggers transition
     fn get_trans_for_char(&self, state: usize, c: char) -> Vec<usize>{
         let mut possible_trans = Vec::new();
 
@@ -93,18 +108,14 @@ impl NFA {
         
     }
 
+    /// Returns a set of all epsilon transitions from the currently active states
+    ///
+    /// # Arguments
+    /// * `active_states` - Reference to a HashSet of the currently active states
     fn all_epsilon(&self, active_states: &HashSet<usize>) -> HashSet<usize> {
         let mut trans = HashSet::new();
 
-        /*
-        for state in active_states.iter().cloned() {
-            for t in self.states[state].iter() {
-                if t.trans_char == EPSILON {
-                    trans.insert(t.next_state);
-                }
-            }
-        }
-        */
+        // loop through all active states and check if they have any epsilon transitions
         for s in active_states.iter().cloned() {
             for i in self.get_trans_for_char(s, EPSILON) {
                 trans.insert(i);
@@ -197,12 +208,6 @@ impl NFA {
             nfa.add_transition(start_state, Transition::new(trans_char, next_state));
         }
 
-        /*DEBUG REMOVE
-        for a in nfa.states.iter() {
-            print!("{:?} ", a);
-        }
-        */
-
         return nfa
     }
 }
@@ -219,13 +224,5 @@ fn main() {
     let res = nfa.simulate(input);
 
     println!("{}", res);
-    /*
-    println!("{}", input);
-    
-    for v in nfa.states {
-        for x in v {
-            println!("{} -> {}", x.trans_char, x.next_state);
-        }
-    }
-    */
+
 }
